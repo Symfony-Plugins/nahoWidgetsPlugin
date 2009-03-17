@@ -17,7 +17,7 @@ class sfWidgetFormRichDateTime extends sfWidgetFormDateTime
    * @var sfWidgetFormRichDate
    */
   protected $date_widget = null;
-
+  
   /**
    * Options :
    * - jscal_format : defines the way the default widget field and the calender trigger will be displayed.
@@ -33,8 +33,39 @@ class sfWidgetFormRichDateTime extends sfWidgetFormDateTime
   {
     parent::configure($options, $attributes);
     
+    $this->addOption('date_widget_class', 'sfWidgetFormRichDate');
+    
+    $this->addOption('single_input', true);
+    $this->addOption('input_hidden', false);
+    
     $this->addOption('jscal_format', sfConfig::get('app_jscalendar_format_datetime', '%date% %time% %calendar%'));
     $this->addOption('sf_date_format', sfConfig::get('app_jscalendar_sf_datetime_format', 'dd/MM/yyyy HH:mm:ss'));
+  }
+  
+  /**
+   * Returns the completed date options
+   * 
+   * @param array $date_options
+   * @return array
+   */
+  protected function getDateWidgetOptions(array $date_options = array())
+  {
+    if ($this->getOption('with_time')) {
+      if (!isset($date_options['jscal_setup'])) {
+        $date_options['jscal_setup'] = array();
+      }
+      $date_options['jscal_setup']['showsTime'] = true;
+    }
+    
+    if (!isset($date_options['sf_date_format'])) {
+      $date_options['sf_date_format'] = $this->getOption('sf_date_format');
+    }
+    
+    $date_options['jscal_format'] = $this->getOption('jscal_format');
+    $date_options['single_input'] = $this->getOption('single_input');
+    $date_options['input_hidden'] = $this->getOption('input_hidden');
+    
+    return $date_options;
   }
   
   /**
@@ -46,22 +77,9 @@ class sfWidgetFormRichDateTime extends sfWidgetFormDateTime
   protected function getDateWidget($attributes = array())
   {
     if (is_null($this->date_widget)) {
-      $date_options = $this->getOption('date');
-      if ($this->getOption('with_time')) {
-        if (!isset($date_options['jscal_setup'])) {
-          $date_options['jscal_setup'] = array();
-        }
-        $date_options['jscal_setup']['showsTime'] = true;
-      }
-      if ($this->getOption('format') == 'input') {
-        $date_options['format'] = 'input';
-      }
-      if (!isset($date_options['sf_date_format'])) {
-        $date_options['sf_date_format'] = $this->getOption('sf_date_format');
-      }
-      $this->setOption('date', $date_options);
-      
-      $this->date_widget = new sfWidgetFormRichDate($this->getOptionsFor('date'), $this->getAttributesFor('date', $attributes));
+      $this->setOption('date', $this->getDateWidgetOptions($this->getOption('date')));
+      $class = $this->getOption('date_widget_class');
+      $this->date_widget = new $class($this->getOptionsFor('date'), $this->getAttributesFor('date', $attributes));
     }
     
     return $this->date_widget;
@@ -99,17 +117,22 @@ class sfWidgetFormRichDateTime extends sfWidgetFormDateTime
    */
   function render($name, $value = null, $attributes = array(), $errors = array())
   {
+    // Date
     $date_widget = $this->getDateWidget($attributes);
+    // Returns the date rendering, including marker %time% not modified
+    $date_render = $date_widget->render($name, $value, $attributes, $errors);
     
-    if (!$this->getOption('with_time') || $this->getOption('format') == 'input') {
-      return $date_widget->render($name, $value, $attributes, $errors);
+    // Time
+    if (!$this->getOption('with_time') || $this->getOption('single_input')) {
+      // Single input or no time included : no need for time rendering
+      $time_render = '';
+    } else {
+      // Returns the time rendering, which will replace %time%
+      $time_render = $this->getTimeWidget($attributes)->render($name, $value);
     }
     
-    return strtr($this->getOption('jscal_format'), array(
-      '%date%'     => $date_widget->renderField($name, $value, $attributes, $errors),
-      '%time%'     => $this->getTimeWidget($attributes)->render($name, $value),
-      '%calendar%' => $date_widget->renderCalendar($name, $value, $attributes, $errors),
-    ));
+    // Final rendering
+    return strtr($date_render, array('%time%' => $time_render));
   }
   
 }

@@ -22,13 +22,8 @@ class sfWidgetFormRichDateTimePlainEditable extends sfWidgetFormRichDateTime
   public function __construct($options = array(), $attributes = array())
   {
     // Ignore options "input_hidden" and "single_input" whose values are forced
-    if (!isset($options['date'])) {
-      $options['date'] = array();
-    } else if (!is_array($options['date'])) {
-      $options['date'] = sfToolkit::stringToArray($options['date']);
-    }
-    $options['date']['input_hidden'] = true;
-    $options['date']['single_input'] = true;
+    $options['input_hidden'] = true;
+    $options['single_input'] = true;
     
     parent::__construct($options, $attributes);
   }
@@ -50,24 +45,29 @@ class sfWidgetFormRichDateTimePlainEditable extends sfWidgetFormRichDateTime
   {
     parent::configure($options, $attributes);
     
+    // Default class is plain editable
+    $this->addOption('date_widget_class', 'sfWidgetFormRichDatePlainEditable');
+    
     // New options
     $this->addOption('display_id', uniqid(''));
-    $this->addOption('display_format', 'D');
+    $this->addOption('display_format', 'F');
     
     // Change jscal_format default value
-    $this->addOption('jscal_format', '%date%<span id="%display_id%">%date_value%</span> %calendar%');
+    $this->addOption('jscal_format', '%date% %time%<span id="%display_id%">%date_value%</span> %calendar%');
   }
   
   /**
-   * (non-PHPdoc)
-   * @see plugins/nahoWidgetsPlugin/lib/sfWidgetFormRichDate#renderCalendar()
+   * Returns the completed date options
+   * 
+   * @param array $date_options
+   * @return array
    */
-  public function renderCalendar($name, $value = null, $setup = array())
+  protected function getDateWidgetOptions(array $date_options = array())
   {
-    return parent::renderCalendar($name, $value, array_merge($setup, array(
-      'displayArea' => $this->getOption('display_id'),
-      'daFormat' => $this->getJSDateFormat($this->getOption('display_format')),
-    )));
+    $date_options['display_id'] = $this->getOption('display_id');
+    $date_options['display_format'] = $this->getOption('display_format');
+    
+    return parent::getDateWidgetOptions($date_options);
   }
   
   /**
@@ -77,7 +77,7 @@ class sfWidgetFormRichDateTimePlainEditable extends sfWidgetFormRichDateTime
   public function render($name, $value = null, $attributes = array(), $errors = array())
   {
     return strtr(parent::render($name, $value, $attributes, $errors), array(
-      '%date_value%' => $this->getDateValue($value, $this->getOption('display_format')),
+      '%date_value%' => $this->getDateWidget()->getDateValue($value, $this->getOption('display_format')),
     ));
   }
   

@@ -125,7 +125,14 @@ class sfWidgetFormRichDate extends sfWidgetFormDate
     return strtr($pattern, $this->sf_to_js);
   }
   
-  protected function getDateValue($value = null, $format = null)
+  /**
+   * Gets the date reformatted, for display
+   * 
+   * @param string $value
+   * @param string $format
+   * @return string
+   */
+  public function getDateValue($value = null, $format = null)
   {
     if ($value) {
       if (is_null($format)) {
