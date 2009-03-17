@@ -1,0 +1,20 @@
+# Defines default options for nahoRichWidgets
+# $Id$
+
+all:
+  jscalendar:
+    format_date: %date% %calendar%
+    format_datetime: %date% %time% %calendar%
+    path: /nahoWidgetsPlugin/jscalendar
+    skins: /nahoWidgetsPlugin/jscalendar/skins
+    theme: minium
+    style: system
+    lang: ~ # automatic from user culture
+    include_js: true
+    include_css: true
+    image: %app_jscalendar_path%/img.gif
+    trigger_label: ...
+    setup: 
+      firstDay: 1
+      #weekNumbers: true
+      #showOthers: true
