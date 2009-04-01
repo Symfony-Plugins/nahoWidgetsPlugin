@@ -63,7 +63,7 @@ class sfWidgetFormPlain extends sfWidgetFormInput
       }
       if (is_null($args) || $args == '~') {
         $args = array();
-      } else {
+      } elseif (!is_array($args)) {
         $args = explode(',', $args);
       }
       array_unshift($args, $html);
