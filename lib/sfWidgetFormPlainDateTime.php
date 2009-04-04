@@ -20,6 +20,8 @@ class sfWidgetFormPlainDateTime extends sfWidgetFormPlain
   {
     parent::configure($options, $attributes);
     
+    sfLoader::loadHelpers(array('Date'));
+    
     $this->addOption('callbacks', array('format_datetime' => null));
   }
   
