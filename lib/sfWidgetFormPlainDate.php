@@ -20,7 +20,7 @@ class sfWidgetFormPlainDate extends sfWidgetFormPlain
   {
     parent::configure($options, $attributes);
     
-    sfLoader::loadHelpers(array('Date'));
+    sfProjectConfiguration::getActive()->loadHelpers('Date');
     
     $this->addOption('callbacks', array('format_date' => null));
   }
